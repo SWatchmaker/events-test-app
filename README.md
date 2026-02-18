@@ -1,106 +1,49 @@
-# New Nx Repository
+# Events App
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+## Instalación
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+Una vez clonado el proyecto, instala las dependencias con el comando
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
-## Finish your Nx platform setup
+`pnpm install`
 
-🚀 [Finish setting up your workspace](https://cloud.nx.app/connect/oMjfQ69Lqh) to get faster builds with remote caching, distributed task execution, and self-healing CI. [Learn more about Nx Cloud](https://nx.dev/ci/intro/why-nx-cloud).
-## Generate a library
+(Puedes ver las opciones para instalar pnpm desde [aquí](https://pnpm.io/installation))
 
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
-```
+Una vez instaladas las dependencias, tienes dos opciones para levantar el proyecto de manera local:
 
-## Run tasks
+### 1.- Utilizar NX (Recomendado si ya tienes una cadena de conexión a base de datos mongo)
 
-To build the library use:
+Asegúrate de crear el archivo **.env** tanto en **webapp-bff** como en **svs-events** y añadir la variable de entorno **DATABASE_URL** con tu cadena de conexión.
 
-```sh
-npx nx build pkg1
-```
+En el archivo **.env** de webapp-bff, añade también la variable BETTER_AUTH_URL con el valor http://localhost:4000 (si optas por especificar otro puerto para el servicio, también debes cambiarlo aquí).
 
-To run any task with Nx use:
+Levanta el proyecto con el comando
 
-```sh
-npx nx <target> <project-name>
-```
+`pnpm dev`
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+### 2.- Utilizar docker compose
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Levanta el proyecto con el comando
 
-## Versioning and releasing
+`docker compose up --build`
 
-To version and release the library use
+## Opcionales Implementados
 
-```
-npx nx release
-```
+**GraphQl**: Se optó por simular una arquitectura de webapp + bff + microservicios para poder implementar GraphQl en la capa de bff y mostrar un pequeño esquema. Al ser el scope de la aplicación tan pequeño, no ofrece mucho para optar por subgraphs y/o Apollo Federation.
 
-Pass `--dry-run` to see what would happen without actually releasing the library.
+**Autenticación JWT**: Se añadió a través del framework de auth **Better Auth**, ya que es una librería moderna de fácil implementación, open source y ofrece buena documentación. También ofrece de la opción de implementar un endpoint de validación de tokens si fuese necesario (lo que es probable si se utiliza JWT).
 
-[Learn more about Nx release &raquo;](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+**Docker**: Dockerfiles agregados en cada servicios y orquestados con docker compose para levantar el proyecto en local en conjunto con una instancia de MongoDB.
 
-## Keep TypeScript project references up to date
+**Micro-frontend**: Si bien no está implementado por ser una app muy pequeña, la estructura de mono repo permitiría fácilmente separar los distintos microfronts en diferentes proyectos dentro de la carpeta **apps** para ser unificados utilizando Module Federation. Probablemente en este setup hipotético sería también conveniente crear una carpeta **packages** para albergar paquetes compartidos y reutilizables entre las distintas app, donde podría estar, por ejemplo, un sistema de diseño para manejar UX de manera transversal con Storybook o alguna librería similar.
 
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
+**Testing Avanzado**: En el proyeto svs-events se dejó un test unitario al mismo nivel del archivo a testear (mongodb-events.repository.ts) y un archivo de muestra de testing e2e utilizando supertest, haciendo un setup de la app completa y sólo creando mocks para la capa de acceso a datos (el servicio de prisma en este caso). En el caso de la webapp, sólo se añadió un test e2e en un setup con vitest + playwright, no se añadió un test unitario ya que al ser un componente tan pequeño, hubiese sido muy similar al e2e ya implementado, pero de ser necesario se hubiera implementado con react-testing-library.
 
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
+**CI/CD**: Se dejaron unos archivos de muestra con unos actions de github para desplegar webapp en Cloudfront y bff en Google Cloud Run. No fue probado su funcionamient pero están a modo de ejemplo ya que son actions que he utilizado en proyectos personales y con los que no he tenido problemas.
 
-```sh
-npx nx sync
-```
+Al momento de escribir este README no hay endpoints para cambiar el estado de un evento (por defecto se crean con estado DRAFT), ni para marcar la asistencia del usuario loggeado a un evento en particular. Los sumaré post entrega pero lo dejo en claro por si se prefiere omitir estos features para la evaluación (también se puede hacer checkout al commit de edición de este archivo para evaluar el proyecto en este punto en particular.)
 
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
+## Comentarios
 
-```sh
-npx nx sync:check
-```
+- No están todos los commits del progreso de desarrollo del proyecto porque sinceramente no leí ese punto en un principio y cuando lo ví ya estaba en la etapa final de desarrollo.
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
-
-## Nx Cloud
-
-Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Set up CI (non-Github Actions CI)
-
-**Note:** This is only required if your CI provider is not GitHub Actions.
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- Se utilizó Open Code + Gemini para agilizar un poco el setup de ciertas cosas, pero tengo entendimiento de todo lo implementado en caso de que existan preguntas.

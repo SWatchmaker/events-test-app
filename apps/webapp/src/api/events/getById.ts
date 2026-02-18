@@ -11,7 +11,7 @@ export const GET_EVENT_BY_ID: TypedDocumentNode<{
     description: string;
     category: string;
     status: string;
-    attendees: { name: string; email: string }[] | null;
+    attendees: { id: string; name: string; email: string }[] | null;
   };
 }> = gql`
   query getEvent($getEventId: ID!) {
@@ -29,6 +29,7 @@ export const GET_EVENT_BY_ID: TypedDocumentNode<{
       category
       status
       attendees {
+        id
         name
         email
       }

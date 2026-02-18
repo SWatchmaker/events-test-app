@@ -28,6 +28,7 @@ import { useMutation, useQuery } from '@apollo/client/react';
 import { authClient } from '@/lib/auth';
 import { CONFIRM_EVENT } from '@/api/events/confirmEvent';
 import { toast } from 'react-toastify';
+import { MARK_ATTENDANCE_TO_EVENT } from '@/api/events/markAttendance';
 
 export const Route = createFileRoute('/_protected/byId/$eventId')({
   component: EventDetailsPage,
@@ -44,6 +45,10 @@ function EventDetailsPage() {
   const [confirmEvent, { loading: confirmLoading }] =
     useMutation(CONFIRM_EVENT);
 
+  const [markAttendance, { loading: attendanceLoading }] = useMutation(
+    MARK_ATTENDANCE_TO_EVENT
+  );
+
   const handleEventConfirmation = () => {
     confirmEvent({
       variables: { eventId },
@@ -52,6 +57,22 @@ function EventDetailsPage() {
         toast.success('Event confirmed successfully!');
       },
       onError: () => toast.error('Failed to confirm event. Please try again.'),
+    });
+  };
+
+  const handleAttendanceChange = (willAttend: boolean) => {
+    markAttendance({
+      variables: { input: { eventId, willAttend } },
+      onCompleted: () => {
+        refetch();
+        toast.success(
+          willAttend
+            ? 'You have marked yourself as attending.'
+            : 'You have marked yourself as not attending.'
+        );
+      },
+      onError: () =>
+        toast.error('Failed to update attendance. Please try again.'),
     });
   };
 
@@ -201,7 +222,18 @@ function EventDetailsPage() {
               <div className="flex items-center space-x-2">
                 {data.getEvent.status === 'CONFIRMED' && (
                   <>
-                    <Switch id="attendance-mode" />
+                    <Switch
+                      disabled={attendanceLoading}
+                      onCheckedChange={handleAttendanceChange}
+                      checked={
+                        authData
+                          ? data.getEvent.attendees?.some(
+                              ({ id }) => id === authData.user.id
+                            )
+                          : false
+                      }
+                      id="attendance-mode"
+                    />
                     <Label htmlFor="attendance-mode">
                       I will attend this event
                     </Label>

@@ -23,7 +23,7 @@ export const typeDefs = gql`
     description: String!
     category: EventCategory!
     status: EventStatus!
-    attendees: [User!]
+    attendees: [User!]!
   }
 
   type User {
@@ -45,6 +45,11 @@ export const typeDefs = gql`
     status: EventStatus
   }
 
+  input MarkAttendanceInput {
+    eventId: ID!
+    willAttend: Boolean!
+  }
+
   type Query {
     getEvent(id: ID!): Event
     getMyEvents: [Event!]!
@@ -54,5 +59,6 @@ export const typeDefs = gql`
   type Mutation {
     createEvent(input: CreateEventInput!): Boolean
     confirmEvent(eventId: ID!): Boolean
+    markAttendance(input: MarkAttendanceInput): Boolean
   }
 `;

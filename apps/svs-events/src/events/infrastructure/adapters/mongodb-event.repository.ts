@@ -61,7 +61,10 @@ export class MongoDbEventRepository implements EventRepositoryPort {
 
   async findById(
     id: string,
-  ): Promise<(Event & { atendees: { name: string; email: string }[] }) | null> {
+  ): Promise<
+    | (Event & { attendees: { id: string; name: string; email: string }[] })
+    | null
+  > {
     const event = await this.prisma.event.findUnique({
       where: { id },
       include: {
@@ -78,7 +81,11 @@ export class MongoDbEventRepository implements EventRepositoryPort {
     if (!event) return null;
     return {
       ...prismaEventToEntity(event),
-      atendees: event.attendees.map((a) => ({ name: a.name, email: a.email })),
+      attendees: event.attendees.map((a) => ({
+        id: a.id,
+        name: a.name,
+        email: a.email,
+      })),
     };
   }
 
@@ -125,6 +132,54 @@ export class MongoDbEventRepository implements EventRepositoryPort {
       where: { id },
       data: {
         ...updates,
+      },
+    });
+  }
+
+  async addAttendee(eventId: string, userId: string): Promise<void> {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { attendeesIds: true },
+    });
+
+    if (!event) {
+      throw new NotFoundException(`Event with id ${eventId} not found`);
+    }
+
+    if (event.attendeesIds.includes(userId)) {
+      return;
+    }
+
+    await this.prisma.event.update({
+      where: { id: eventId },
+      data: {
+        attendees: {
+          connect: { id: userId },
+        },
+      },
+    });
+  }
+
+  async removeAttendee(eventId: string, userId: string): Promise<void> {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { attendeesIds: true },
+    });
+
+    if (!event) {
+      throw new NotFoundException(`Event with id ${eventId} not found`);
+    }
+
+    if (!event.attendeesIds.includes(userId)) {
+      return;
+    }
+
+    await this.prisma.event.update({
+      where: { id: eventId },
+      data: {
+        attendees: {
+          disconnect: { id: userId },
+        },
       },
     });
   }

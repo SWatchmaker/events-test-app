@@ -8,6 +8,8 @@ import { SearchEventsUseCase } from './application/use-cases/search-events.use-c
 import { FindEventByIdUseCase } from './application/use-cases/find-event-by-id.use-case';
 import { FindEventByOrganicerUseCase } from './application/use-cases/find-event-by-organizer.use-case';
 import { ConfirmEventUseCase } from './application/use-cases/confirm-event.use-case';
+import { AddAttendeeEventUseCase } from './application/use-cases/add-attendee-use-case';
+import { RemoveAttendeeFromEventUseCase } from './application/use-cases/remove-attendee.use-case';
 
 @Module({
   controllers: [EventsController],
@@ -17,6 +19,8 @@ import { ConfirmEventUseCase } from './application/use-cases/confirm-event.use-c
     FindEventByIdUseCase,
     FindEventByOrganicerUseCase,
     ConfirmEventUseCase,
+    AddAttendeeEventUseCase,
+    RemoveAttendeeFromEventUseCase,
     {
       provide: EVENT_REPOSITORY,
       useClass: MongoDbEventRepository,

@@ -125,5 +125,43 @@ export const resolvers = {
         });
       }
     },
+    markAttendance: async (
+      _: unknown,
+      {
+        input: { eventId, willAttend },
+      }: { input: { eventId: string; willAttend: boolean } },
+      ctx: ApolloContext,
+    ) => {
+      if (!ctx.currentUser) {
+        throw new GraphQLError('Unauthorized', {
+          extensions: {
+            code: 'UNAUTHORIZED',
+          },
+        });
+      }
+
+      try {
+        if (willAttend) {
+          await axios.post(
+            `${API_URL}/events/${eventId}/attendees/${ctx.currentUser.id}`,
+          );
+        } else {
+          await axios.delete(
+            `${API_URL}/events/${eventId}/attendees/${ctx.currentUser.id}`,
+          );
+        }
+        return true;
+      } catch (error) {
+        console.error(
+          'Error marking attendance:',
+          (error as AxiosError).message,
+        );
+        throw new GraphQLError('Failed to mark attendance', {
+          extensions: {
+            code: 'INTERNAL_SERVER_ERROR',
+          },
+        });
+      }
+    },
   },
 };

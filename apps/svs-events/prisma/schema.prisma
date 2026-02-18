@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client"
+  output        = "../src/generated/prisma"
+  moduleFormat  = "cjs"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  email             String   @unique
+  name              String
+  eventsOwned       Event[]  @relation("UserEventsOwned")
+  eventsToAttendIds String[] @db.ObjectId
+  eventsToAttend    Event[]  @relation(fields: [eventsToAttendIds], references: [id])
+
+  @@map("user")
+}
+
+enum EventStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+enum EventCategory {
+  TALK
+  WORKSHOP
+  MEETUP
+  SOCIAL
+}
+
+model Event {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  description  String
+  category     EventCategory
+  date         DateTime
+  location     String
+  organizer    User          @relation(fields: [organizerId], references: [id], name: "UserEventsOwned")
+  organizerId  String        @db.ObjectId
+  status       EventStatus   @default(DRAFT)
+  attendeesIds String[]      @db.ObjectId
+  attendees    User[]        @relation(fields: [attendeesIds], references: [id])
+}

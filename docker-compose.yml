@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # Database Service (Single Node Replica Set)
+  mongo:
+    image: mongo:latest
+    container_name: recylink-mongo
+    restart: always
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - recylink-net
+    # Start mongod with Replica Set enabled and bind to all IPs
+    # Note: For a single-node RS in Docker, we often skip the keyfile complexity if strictly internal,
+    # but with Auth enabled, keyfile is mandatory for RS communication.
+    # We generate a keyfile on the fly for simplicity in this dev environment.
+    entrypoint:
+      - bash
+      - -c
+      - |
+        openssl rand -base64 756 > /data/db/keyfile
+        chmod 400 /data/db/keyfile
+        chown 999:999 /data/db/keyfile
+        exec docker-entrypoint.sh mongod --replSet rs0 --keyFile /data/db/keyfile --bind_ip_all
+
+  # Mongo Replica Set Initializer
+  mongo-init:
+    image: mongo:latest
+    container_name: recylink-mongo-init
+    restart: 'no'
+    depends_on:
+      - mongo
+    networks:
+      - recylink-net
+    command: >
+      bash -c "
+        echo 'Waiting for mongo...'
+        until mongosh --host mongo:27017 -u admin -p password --authenticationDatabase admin --eval 'quit(0)' 2>/dev/null; do
+          sleep 2
+        done
+        echo 'Initializing Replica Set...'
+        # Check if already initialized to avoid errors on restart
+        mongosh --host mongo:27017 -u admin -p password --authenticationDatabase admin --eval '
+          try {
+            var status = rs.status();
+            if (status.ok === 1) {
+              print(\"Replica Set already initialized.\");
+            } else {
+              throw new Error(\"Not initialized\");
+            }
+          } catch (e) {
+            print(\"Initiating Replica Set...\");
+            rs.initiate({ _id: \"rs0\", members: [{ _id: 0, host: \"mongo:27017\" }] });
+          }
+        '
+        echo 'Replica Set check complete.'
+      "
+
+  # NestJS Backend Service (Events)
+  svs-events:
+    container_name: recylink-svs-events
+    build:
+      context: .
+      dockerfile: apps/svs-events/Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      # Connects to the internal 'mongo' service name on port 27017
+      DATABASE_URL: 'mongodb://admin:password@mongo:27017/recylink?authSource=admin&replicaSet=rs0'
+    depends_on:
+      - mongo
+      - mongo-init
+    networks:
+      - recylink-net
+
+  # Backend-for-Frontend Service (BFF)
+  webapp-bff:
+    container_name: recylink-webapp-bff
+    build:
+      context: .
+      dockerfile: apps/webapp-bff/Dockerfile
+    ports:
+      - '4000:4000'
+    environment:
+      # Connects to the internal 'mongo' service name on port 27017
+      DATABASE_URL: 'mongodb://admin:password@mongo:27017/recylink?authSource=admin&replicaSet=rs0'
+      # Ensure better-auth uses the correct base URL
+      BETTER_AUTH_URL: 'http://localhost:4000'
+      # Internal URL for the svs-events service
+      API_URL: 'http://svs-events:3000/api'
+    depends_on:
+      - mongo
+      - mongo-init
+    networks:
+      - recylink-net
+
+  # Frontend Webapp Service (Nginx)
+  webapp:
+    container_name: recylink-webapp
+    build:
+      context: .
+      dockerfile: apps/webapp/Dockerfile
+    ports:
+      - '5173:80'
+    depends_on:
+      - webapp-bff
+    networks:
+      - recylink-net
+
+volumes:
+  mongo_data:
+
+networks:
+  recylink-net:
+    driver: bridge

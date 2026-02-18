@@ -1,0 +1,56 @@
+name: Webapp BFF Deployment Workflow
+on:
+  push:
+    paths:
+      - 'apps/webapp-bff/**'
+      - '.github/workflows/webapp-bff-deploy.yml'
+    branches:
+      - main
+      - staging
+      - develop
+
+env:
+  PROJECT_ID: ${{ secrets.GCLOUD_PROJECT }}
+  REGION: ${{ secrets.GCLOUD_REGION }}
+  REPOSITORY_NAME: ${{ secrets.GCLOUD_REPOSITORY }}
+  IMAGE_NAME: events-webapp-bff
+  SERVICE_NAME: events-webapp-bff
+
+jobs:
+  build-image-and-push-it:
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || github.ref == 'refs/heads/staging' && 'staging' || 'develop' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: 'Authenticate to Google Cloud'
+        id: 'auth'
+        uses: 'google-github-actions/auth@v3'
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCLOUD_WIP }}
+      - name: Login to Artifact Registry
+        run: |-
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/webapp-bff/Dockerfile
+          push: true
+          tags:
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY_NAME }}/${{ env.IMAGE_NAME }}:latest,
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha,scope=build-push-cache
+          cache-to: type=gha,scope=build-push-cache
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          region: ${{ env.REGION }}

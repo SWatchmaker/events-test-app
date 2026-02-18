@@ -1,0 +1,39 @@
+name: Webapp Deployment Workflow
+on:
+  push:
+    paths:
+      - 'apps/webapp/**'
+      - '.github/workflows/webapp-deploy.yml'
+    branches:
+      - main
+      - staging
+      - develop
+
+jobs:
+  build-and-deploy:
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || github.ref == 'refs/heads/staging' && 'staging' || 'develop' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pnpm
+        run: npm install -g pnpm@10
+      - name: Install dependencies
+        run: pnpm install
+      - name: Create .env file
+        run: |
+          echo "VITE_BFF_BASE_URL=${{ secrets.VITE_BFF_BASE_URL }}" >> apps/webapp/.env
+      - name: Build project
+        run: cd apps/webapp && pnpm build
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=bready-dev # or 'publish --minify' depending on wrangler version/docs
+          workingDirectory: apps/bready-webapp
+          packageManager: pnpm

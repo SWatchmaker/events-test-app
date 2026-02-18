@@ -5,6 +5,9 @@ dist
 tmp
 out-tsc
 
+.env
+.gemini
+
 # dependencies
 node_modules
 

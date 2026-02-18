@@ -12,6 +12,7 @@ import { CreateEventDto, SearchEventsDto } from '../domain/dtos/event.dtos';
 import { SearchEventsUseCase } from '../application/use-cases/search-events.use-case';
 import { FindEventByIdUseCase } from '../application/use-cases/find-event-by-id.use-case';
 import { FindEventByOrganicerUseCase } from '../application/use-cases/find-event-by-organizer.use-case';
+import { ConfirmEventUseCase } from '../application/use-cases/confirm-event.use-case';
 
 @Controller('events')
 export class EventsController {
@@ -20,12 +21,19 @@ export class EventsController {
     private readonly searchEventUseCase: SearchEventsUseCase,
     private readonly getEventByIdUseCase: FindEventByIdUseCase,
     private readonly getEventsByOrganizerIdUseCase: FindEventByOrganicerUseCase,
+    private readonly confirmEventUseCase: ConfirmEventUseCase,
   ) {}
 
   @Post()
   async createEvent(@Body() newUser: CreateEventDto) {
     const createdUser = await this.createEventUseCase.execute(newUser);
     return createdUser;
+  }
+
+  @Post(':id/confirm')
+  async confirmEvent(@Param('id') id: string) {
+    await this.confirmEventUseCase.execute(id);
+    return;
   }
 
   @Get('search')

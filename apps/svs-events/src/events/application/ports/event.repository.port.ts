@@ -10,7 +10,10 @@ export interface EventRepositoryPort {
   ): Promise<(Event & { atendees: { name: string; email: string }[] }) | null>;
   findByOrganizerId(organizerId: string): Promise<Event[]>;
   search(params: SearchEventsDto): Promise<Event[]>;
-  // update(event: Event): Promise<void>;
+  update(
+    id: string,
+    updates: Partial<Partial<Omit<Event, 'id' | 'organizer'>>>,
+  ): Promise<void>;
   // delete(id: string): Promise<void>;
 }
 

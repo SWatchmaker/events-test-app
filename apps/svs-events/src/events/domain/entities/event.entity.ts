@@ -10,7 +10,7 @@ export class Event {
     public description: string,
     public category: EventCategory,
     public status: EventStatus,
-    public organizer: { name: string; email: string } | undefined,
+    public organizer: { id: string; name: string; email: string } | undefined,
   ) {}
 
   static create(
@@ -21,7 +21,7 @@ export class Event {
     description: string,
     category: EventCategory,
     status: EventStatus,
-    organizer: { name: string; email: string } | undefined,
+    organizer: { id: string; name: string; email: string } | undefined,
   ): Event {
     return new Event(
       id,

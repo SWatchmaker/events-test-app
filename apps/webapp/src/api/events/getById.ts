@@ -4,7 +4,7 @@ import type { TypedDocumentNode } from '@apollo/client';
 export const GET_EVENT_BY_ID: TypedDocumentNode<{
   getEvent: {
     id: string;
-    organizer: { name: string; email: string };
+    organizer: { id: string; name: string; email: string };
     title: string;
     date: string;
     location: string;
@@ -18,6 +18,7 @@ export const GET_EVENT_BY_ID: TypedDocumentNode<{
     getEvent(id: $getEventId) {
       id
       organizer {
+        id
         name
         email
       }

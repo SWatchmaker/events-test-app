@@ -88,5 +88,42 @@ export const resolvers = {
         });
       }
     },
+    confirmEvent: async (
+      _: unknown,
+      { eventId }: { eventId: string },
+      ctx: ApolloContext,
+    ) => {
+      if (!ctx.currentUser) {
+        throw new GraphQLError('Unauthorized', {
+          extensions: {
+            code: 'UNAUTHORIZED',
+          },
+        });
+      }
+
+      const currentEvent = await axios
+        .get(`${API_URL}/events/${eventId}`)
+        .then((res) => res.data);
+
+      if (currentEvent?.organizer.id !== ctx.currentUser.id) {
+        throw new GraphQLError('Forbidden', {
+          extensions: {
+            code: 'FORBIDDEN',
+          },
+        });
+      }
+
+      try {
+        await axios.post(`${API_URL}/events/${eventId}/confirm`);
+        return true;
+      } catch (error) {
+        console.error('Error confirming event:', (error as AxiosError).message);
+        throw new GraphQLError('Failed to confirm event', {
+          extensions: {
+            code: 'INTERNAL_SERVER_ERROR',
+          },
+        });
+      }
+    },
   },
 };

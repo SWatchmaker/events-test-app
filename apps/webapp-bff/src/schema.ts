@@ -27,6 +27,7 @@ export const typeDefs = gql`
   }
 
   type User {
+    id: String!
     email: String!
     name: String!
   }
@@ -52,5 +53,6 @@ export const typeDefs = gql`
 
   type Mutation {
     createEvent(input: CreateEventInput!): Boolean
+    confirmEvent(eventId: ID!): Boolean
   }
 `;

@@ -7,7 +7,7 @@ import { Prisma } from '@/generated/prisma/client';
 
 const prismaEventToEntity = (
   prisma: Prisma.EventModel & {
-    organizer: Pick<Prisma.UserModel, 'name' | 'email'>;
+    organizer: Pick<Prisma.UserModel, 'name' | 'email' | 'id'>;
   },
 ): Event => {
   return Event.create(
@@ -52,6 +52,7 @@ export class MongoDbEventRepository implements EventRepositoryPort {
     return prismaEventToEntity({
       ...createdUser,
       organizer: {
+        id: existingOrganizer.id,
         name: existingOrganizer.name,
         email: existingOrganizer.email,
       },
@@ -66,6 +67,7 @@ export class MongoDbEventRepository implements EventRepositoryPort {
       include: {
         organizer: {
           select: {
+            id: true,
             name: true,
             email: true,
           },
@@ -86,6 +88,7 @@ export class MongoDbEventRepository implements EventRepositoryPort {
       include: {
         organizer: {
           select: {
+            id: true,
             name: true,
             email: true,
           },
@@ -104,6 +107,7 @@ export class MongoDbEventRepository implements EventRepositoryPort {
       include: {
         organizer: {
           select: {
+            id: true,
             name: true,
             email: true,
           },
@@ -111,5 +115,17 @@ export class MongoDbEventRepository implements EventRepositoryPort {
       },
     });
     return events.map(prismaEventToEntity);
+  }
+
+  async update(
+    id: string,
+    updates: Partial<Omit<Event, 'id' | 'organizer'>>,
+  ): Promise<void> {
+    await this.prisma.event.update({
+      where: { id },
+      data: {
+        ...updates,
+      },
+    });
   }
 }

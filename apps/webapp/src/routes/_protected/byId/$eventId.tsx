@@ -24,7 +24,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { GET_EVENT_BY_ID } from '@/api/events/getById';
-import { useQuery } from '@apollo/client/react';
+import { useMutation, useQuery } from '@apollo/client/react';
+import { authClient } from '@/lib/auth';
+import { CONFIRM_EVENT } from '@/api/events/confirmEvent';
+import { toast } from 'react-toastify';
 
 export const Route = createFileRoute('/_protected/byId/$eventId')({
   component: EventDetailsPage,
@@ -32,10 +35,25 @@ export const Route = createFileRoute('/_protected/byId/$eventId')({
 
 function EventDetailsPage() {
   const { eventId } = Route.useParams();
+  const { data: authData } = authClient.useSession();
 
-  const { data, loading, error } = useQuery(GET_EVENT_BY_ID, {
+  const { data, loading, error, refetch } = useQuery(GET_EVENT_BY_ID, {
     variables: { getEventId: eventId },
   });
+
+  const [confirmEvent, { loading: confirmLoading }] =
+    useMutation(CONFIRM_EVENT);
+
+  const handleEventConfirmation = () => {
+    confirmEvent({
+      variables: { eventId },
+      onCompleted: () => {
+        refetch();
+        toast.success('Event confirmed successfully!');
+      },
+      onError: () => toast.error('Failed to confirm event. Please try again.'),
+    });
+  };
 
   if (loading) {
     return (
@@ -177,14 +195,27 @@ function EventDetailsPage() {
           {/* Registration Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Registration</CardTitle>
+              <CardTitle className="text-lg">Actions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center space-x-2">
-                <Switch id="attendance-mode" />
-                <Label htmlFor="attendance-mode">
-                  I will attend this event
-                </Label>
+                {data.getEvent.status === 'CONFIRMED' && (
+                  <>
+                    <Switch id="attendance-mode" />
+                    <Label htmlFor="attendance-mode">
+                      I will attend this event
+                    </Label>
+                  </>
+                )}
+                {data.getEvent.status === 'DRAFT' &&
+                  data.getEvent.organizer.id === authData?.user.id && (
+                    <Button
+                      onClick={handleEventConfirmation}
+                      disabled={confirmLoading}
+                    >
+                      Confirm Event
+                    </Button>
+                  )}
               </div>
             </CardContent>
           </Card>

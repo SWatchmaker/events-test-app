@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as ProtectedNewRouteImport } from './routes/_protected/new'
+import { Route as ProtectedMyEventsRouteImport } from './routes/_protected/myEvents'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedByIdEventIdRouteImport } from './routes/_protected/byId/$eventId'
 
@@ -29,6 +30,11 @@ const ProtectedNewRoute = ProtectedNewRouteImport.update({
   path: '/new',
   getParentRoute: () => ProtectedRouteRoute,
 } as any)
+const ProtectedMyEventsRoute = ProtectedMyEventsRouteImport.update({
+  id: '/myEvents',
+  path: '/myEvents',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -44,6 +50,7 @@ export interface FileRoutesByFullPath {
   '/': typeof ProtectedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/myEvents': typeof ProtectedMyEventsRoute
   '/new': typeof ProtectedNewRoute
   '/byId/$eventId': typeof ProtectedByIdEventIdRoute
 }
@@ -51,6 +58,7 @@ export interface FileRoutesByTo {
   '/': typeof ProtectedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/myEvents': typeof ProtectedMyEventsRoute
   '/new': typeof ProtectedNewRoute
   '/byId/$eventId': typeof ProtectedByIdEventIdRoute
 }
@@ -59,19 +67,27 @@ export interface FileRoutesById {
   '/_protected': typeof ProtectedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/_protected/myEvents': typeof ProtectedMyEventsRoute
   '/_protected/new': typeof ProtectedNewRoute
   '/_protected/byId/$eventId': typeof ProtectedByIdEventIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/dashboard' | '/new' | '/byId/$eventId'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/myEvents'
+    | '/new'
+    | '/byId/$eventId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/dashboard' | '/new' | '/byId/$eventId'
+  to: '/' | '/login' | '/dashboard' | '/myEvents' | '/new' | '/byId/$eventId'
   id:
     | '__root__'
     | '/_protected'
     | '/login'
     | '/_protected/dashboard'
+    | '/_protected/myEvents'
     | '/_protected/new'
     | '/_protected/byId/$eventId'
   fileRoutesById: FileRoutesById
@@ -104,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedNewRouteImport
       parentRoute: typeof ProtectedRouteRoute
     }
+    '/_protected/myEvents': {
+      id: '/_protected/myEvents'
+      path: '/myEvents'
+      fullPath: '/myEvents'
+      preLoaderRoute: typeof ProtectedMyEventsRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
       path: '/dashboard'
@@ -123,12 +146,14 @@ declare module '@tanstack/react-router' {
 
 interface ProtectedRouteRouteChildren {
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+  ProtectedMyEventsRoute: typeof ProtectedMyEventsRoute
   ProtectedNewRoute: typeof ProtectedNewRoute
   ProtectedByIdEventIdRoute: typeof ProtectedByIdEventIdRoute
 }
 
 const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
   ProtectedDashboardRoute: ProtectedDashboardRoute,
+  ProtectedMyEventsRoute: ProtectedMyEventsRoute,
   ProtectedNewRoute: ProtectedNewRoute,
   ProtectedByIdEventIdRoute: ProtectedByIdEventIdRoute,
 }

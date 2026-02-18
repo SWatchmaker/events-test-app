@@ -39,6 +39,7 @@ interface SidebarLink extends LinkProps {
 
 const DEFAULT_LINKS: SidebarLink[] = [
   { to: '/dashboard', label: 'Panel', icon: LayoutDashboard },
+  { to: '/myEvents', label: 'Mis Eventos', icon: LayoutDashboard },
   { to: '/new', label: 'Nuevo Evento', icon: Plus },
 ];
 

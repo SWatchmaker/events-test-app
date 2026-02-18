@@ -80,6 +80,21 @@ export class MongoDbEventRepository implements EventRepositoryPort {
     };
   }
 
+  async findByOrganizerId(organizerId: string): Promise<Event[]> {
+    const events = await this.prisma.event.findMany({
+      where: { organizerId },
+      include: {
+        organizer: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+    return events.map((event) => prismaEventToEntity(event));
+  }
+
   async search(params: SearchEventsDto): Promise<Event[]> {
     const events = await this.prisma.event.findMany({
       where: {

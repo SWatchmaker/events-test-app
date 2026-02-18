@@ -11,6 +11,7 @@ import { CreateEventUseCase } from '../application/use-cases/create-event.use-ca
 import { CreateEventDto, SearchEventsDto } from '../domain/dtos/event.dtos';
 import { SearchEventsUseCase } from '../application/use-cases/search-events.use-case';
 import { FindEventByIdUseCase } from '../application/use-cases/find-event-by-id.use-case';
+import { FindEventByOrganicerUseCase } from '../application/use-cases/find-event-by-organizer.use-case';
 
 @Controller('events')
 export class EventsController {
@@ -18,6 +19,7 @@ export class EventsController {
     private readonly createEventUseCase: CreateEventUseCase,
     private readonly searchEventUseCase: SearchEventsUseCase,
     private readonly getEventByIdUseCase: FindEventByIdUseCase,
+    private readonly getEventsByOrganizerIdUseCase: FindEventByOrganicerUseCase,
   ) {}
 
   @Post()
@@ -41,5 +43,14 @@ export class EventsController {
       throw new NotFoundException(`Event with id ${id} not found`);
     }
     return event;
+  }
+
+  @Get('byOrganizer/:organizerId')
+  async getEventsByOrganizerId(@Param('organizerId') organizerId: string) {
+    const events =
+      await this.getEventsByOrganizerIdUseCase.execute(organizerId);
+    return {
+      events,
+    };
   }
 }

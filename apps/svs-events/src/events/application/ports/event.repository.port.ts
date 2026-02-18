@@ -8,6 +8,7 @@ export interface EventRepositoryPort {
   findById(
     id: string,
   ): Promise<(Event & { atendees: { name: string; email: string }[] }) | null>;
+  findByOrganizerId(organizerId: string): Promise<Event[]>;
   search(params: SearchEventsDto): Promise<Event[]>;
   // update(event: Event): Promise<void>;
   // delete(id: string): Promise<void>;

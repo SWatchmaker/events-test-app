@@ -6,6 +6,7 @@ import { MongoDbEventRepository } from './infrastructure/adapters/mongodb-event.
 import { PrismaService } from '../shared/prisma.service';
 import { SearchEventsUseCase } from './application/use-cases/search-events.use-case';
 import { FindEventByIdUseCase } from './application/use-cases/find-event-by-id.use-case';
+import { FindEventByOrganicerUseCase } from './application/use-cases/find-event-by-organizer.use-case';
 
 @Module({
   controllers: [EventsController],
@@ -13,6 +14,7 @@ import { FindEventByIdUseCase } from './application/use-cases/find-event-by-id.u
     CreateEventUseCase,
     SearchEventsUseCase,
     FindEventByIdUseCase,
+    FindEventByOrganicerUseCase,
     {
       provide: EVENT_REPOSITORY,
       useClass: MongoDbEventRepository,

@@ -41,6 +41,24 @@ export const resolvers = {
         return [];
       }
     },
+    getMyEvents: async (_: unknown, __: unknown, ctx: ApolloContext) => {
+      if (!ctx.currentUser) {
+        throw new GraphQLError('Unauthorized', {
+          extensions: {
+            code: 'UNAUTHORIZED',
+          },
+        });
+      }
+      try {
+        const response = await axios.get(
+          `${API_URL}/events/byOrganizer/${ctx.currentUser.id}`,
+        );
+        return response.data.events;
+      } catch (error) {
+        console.error('Error fetching my events:', error);
+        return [];
+      }
+    },
   },
   Mutation: {
     createEvent: async (

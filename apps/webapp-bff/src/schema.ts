@@ -46,6 +46,7 @@ export const typeDefs = gql`
 
   type Query {
     getEvent(id: ID!): Event
+    getMyEvents: [Event!]!
     searchEvents(input: SearchEventsInput): [Event!]!
   }
 

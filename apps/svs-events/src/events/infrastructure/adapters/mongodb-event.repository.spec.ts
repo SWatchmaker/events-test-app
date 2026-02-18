@@ -118,6 +118,7 @@ describe('MongoDbEventRepository', () => {
       expect(result.id).toBe(mockPrismaEvent.id);
       expect(result.title).toBe(mockPrismaEvent.title);
       expect(result.organizer).toEqual({
+        id: mockOrganizer.id,
         name: mockOrganizer.name,
         email: mockOrganizer.email,
       });
@@ -157,6 +158,7 @@ describe('MongoDbEventRepository', () => {
         include: {
           organizer: {
             select: {
+              id: true,
               name: true,
               email: true,
             },
@@ -168,8 +170,9 @@ describe('MongoDbEventRepository', () => {
       expect(result).toBeDefined();
       if (result) {
         expect(result.id).toBe(mockPrismaEvent.id);
-        expect(result.atendees).toHaveLength(1);
-        expect(result.atendees[0]).toEqual({
+        expect(result.attendees).toHaveLength(1);
+        expect(result.attendees[0]).toEqual({
+          id: mockAttendee.id,
           name: mockAttendee.name,
           email: mockAttendee.email,
         });
@@ -186,6 +189,7 @@ describe('MongoDbEventRepository', () => {
         include: {
           organizer: {
             select: {
+              id: true,
               name: true,
               email: true,
             },
@@ -213,6 +217,7 @@ describe('MongoDbEventRepository', () => {
         include: {
           organizer: {
             select: {
+              id: true,
               name: true,
               email: true,
             },
